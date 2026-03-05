@@ -1,0 +1,28 @@
+# Python-Caches (Wichtig!)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtuelle Umgebung (Niemals hochladen!)
+venv/
+env/
+ENV/
+.venv/
+
+# Datenbanken (Wichtig: SQLite-Dateien draußen lassen)
+*.sqlite3
+*.db
+data/*.sqlite
+data/*.db
+
+# Flask/Umgebungs-Variablen
+.env
+.flaskenv
+
+# IDE-Einstellungen
+.vscode/
+.idea/
+
+# Betriebssystem-Müll
+.DS_Store
+Thumbs.db
