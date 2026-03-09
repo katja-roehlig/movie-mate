@@ -1,0 +1,7 @@
+{% extends "base.html" %} {% block content %} {% for movie in movies %}
+<p>{{movie.title}}</p>
+<p>{{movie.director}}</p>
+<p>{{movie.year}}</p>
+<p>{{movie.rating}}</p>
+<img src="{{movie.img}}" alt="Movie Picture" />
+{% endfor %} {% endblock %}

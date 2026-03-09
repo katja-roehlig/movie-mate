@@ -1,0 +1,26 @@
+{% extends "base.html" %} {% block content %} {% with messages =
+get_flashed_messages() %} {% if messages %} {% for message in messages %}
+
+<dialog open class="popup">
+  <p>{{ message }}</p>
+  <button type="button" onclick="this.parentElement.removeAttribute('open')">
+    OK
+  </button>
+</dialog>
+{% endfor %}{% endif %} {% endwith %} {% for user in users %}
+<!-- h2, because h1 is already used in base.html -->
+<h2>
+  <a href="{{ url_for('index') }}">{{user.name}}</a>
+</h2>
+{% endfor %}
+
+<div class="book-container">
+  <form action="{{ url_for('add_user') }}" method="post">
+    <div class="input-container">
+      <label for="user_name">Name: </label>
+      <input type="text" name="user_name" placeholder="Max Mustermann" />
+    </div>
+    <button type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

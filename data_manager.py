@@ -5,7 +5,7 @@ class DataManager:
     def create_user(self, user_name):
         new_user = User(name=user_name)
         db.session.add(new_user)
-        db.session.commit()nein, das ist soweit klar! wo
+        db.session.commit()
 
     def get_all_users(self):
         user_list = db.session.query(User).all()
