@@ -1,7 +1,8 @@
 from flask import Flask, flash, redirect, render_template, request, url_for
 import os
-from models import db
+from models import db, Movie
 from data_manager import DataManager
+import api.api_handler as api
 
 app = Flask(__name__)
 
@@ -34,24 +35,49 @@ def add_user():
 
 
 @app.route("/users/<int:user_id>/movies", methods=["GET"])
-def user_movies(user_id):
+def show_movies(user_id):
     favorite_movies = data_manager.get_movies(user_id)
-    return render_template("movies.html", movies=favorite_movies)
+    return render_template("movies.html", movies=favorite_movies, current_user=user_id)
 
 
 @app.route("/users/<int:user_id>/movies", methods=["POST"])
-def add_movie(user_id):
-    pass
+def add_new_movie(user_id):
+    movie_title = request.form.get("title")
+    if movie_title:
+        title_existing = data_manager.is_movie_already_existing(user_id, movie_title)
+        if title_existing:
+            flash("Movie already exists!")
+            return redirect(url_for("show_movies", user_id=user_id))
+        new_movie = api.get_movie_info_per_title(movie_title)
+        if not new_movie:
+            flash("Movie was not found.")
+            return redirect(url_for("show_movies", user_id=user_id))
+        title, publication_year, image = new_movie
+        movie = Movie(user_id=user_id, title=title, year=publication_year, img=image)
+        data_manager.add_movie(movie)
+    return redirect(url_for("show_movies", user_id=user_id))
 
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/update", methods=["POST"])
-def functionb():
-    pass
+def update_rating(user_id, movie_id):
+    rating = request.form.get("rating")
+    rating = float(rating)
+    print(type(rating))
+    if not rating:
+        return redirect(url_for("show_movies", user_id=user_id))
+    if 1 <= rating <= 10:
+        data_manager.update_movie(movie_id, rating)
+        flash("Movie successfully updated")
+        return redirect(url_for("show_movies", user_id=user_id))
+    flash("Rating must be a number between 1 and 10.")
+    return redirect(url_for("show_movies", user_id=user_id))
 
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/delete", methods=["POST"])
-def functionc():
-    pass
+def delete(user_id, movie_id):
+    data_manager.delete_movie(movie_id)
+    flash("Movie successfully deleted")
+    return redirect(url_for("show_movies", user_id=user_id))
 
 
 if __name__ == "__main__":

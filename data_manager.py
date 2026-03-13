@@ -13,9 +13,19 @@ class DataManager:
 
     def get_movies(self, user_id):
         # user_movies = db.session.query(Movie).filter(Movie.user_id == user_id).all() - Lange Schreibweise
-        user = User.query.get(user_id)
-        user_movies = user.movies
+        user = User.query.get(user_id)  # ermittle User, speichere id des users (z.B. 5)
+        user_movies = (
+            user.movies
+        )  # die movies vom user (übersetzt sowas wie user5.movies)
         return user_movies
+
+    def is_movie_already_existing(self, user_id, title):
+        is_existing = Movie.query.filter(
+            Movie.title == title, Movie.user_id == user_id
+        ).first()
+        if is_existing:
+            return True
+        return False
 
     def add_movie(self, movie):
         db.session.add(movie)
