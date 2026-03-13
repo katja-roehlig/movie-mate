@@ -29,8 +29,10 @@ def index():
 def add_user():
     new_user = request.form.get("user_name")
     if new_user:
-        data_manager.create_user(new_user)
-        flash("User successfully added!")
+        if not data_manager.create_user(new_user):
+            flash("Something went wrong. \nPlease try again", "error")
+            return redirect(url_for("index"))
+    flash("User successfully added!", "success")
     return redirect(url_for("index"))
 
 
@@ -42,42 +44,82 @@ def show_movies(user_id):
 
 @app.route("/users/<int:user_id>/movies", methods=["POST"])
 def add_new_movie(user_id):
-    movie_title = request.form.get("title")
-    if movie_title:
-        title_existing = data_manager.is_movie_already_existing(user_id, movie_title)
-        if title_existing:
-            flash("Movie already exists!")
-            return redirect(url_for("show_movies", user_id=user_id))
-        new_movie = api.get_movie_info_per_title(movie_title)
-        if not new_movie:
-            flash("Movie was not found.")
-            return redirect(url_for("show_movies", user_id=user_id))
-        title, publication_year, image = new_movie
-        movie = Movie(user_id=user_id, title=title, year=publication_year, img=image)
-        data_manager.add_movie(movie)
+    movie_title = request.form.get("title", "").strip()
+    if not movie_title:
+        flash("You must enter a movie title!", "attention")
+        return redirect(url_for("show_movies", user_id=user_id))
+
+    title_existing = data_manager.is_movie_already_existing(user_id, movie_title)
+
+    if title_existing:
+        flash("Movie already exists!", "attention")
+        return redirect(url_for("show_movies", user_id=user_id))
+
+    new_movie = api.get_movie_info_per_title(movie_title)
+
+    if new_movie is False:
+        flash(
+            "Movie was not found. Please check the spelling of the title", "attention"
+        )
+        return redirect(url_for("show_movies", user_id=user_id))
+    if new_movie is None:
+        flash(
+            "Unable to connect to the movie database. "
+            "Please check your internet connection or try again later.",
+            "error",
+        )
+        return redirect(url_for("show_movies", user_id=user_id))
+
+    title, publication_year, image = new_movie
+
+    movie = Movie(user_id=user_id, title=title, year=publication_year, img=image)
+    if not data_manager.add_movie(movie):
+        flash("Something went wrong with the database. Please try again", "error")
+        return redirect(url_for("show_movies", user_id=user_id))
+    flash("Movie successfully added", "success")
     return redirect(url_for("show_movies", user_id=user_id))
 
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/update", methods=["POST"])
 def update_rating(user_id, movie_id):
     rating = request.form.get("rating")
-    rating = float(rating)
-    print(type(rating))
+
     if not rating:
         return redirect(url_for("show_movies", user_id=user_id))
-    if 1 <= rating <= 10:
-        data_manager.update_movie(movie_id, rating)
-        flash("Movie successfully updated")
+    try:
+        rating = float(rating)
+    except ValueError:
+        flash("Please enter a number between 1 and 10", "attention")
         return redirect(url_for("show_movies", user_id=user_id))
-    flash("Rating must be a number between 1 and 10.")
+
+    if not (1 <= rating <= 10):
+        flash("Rating must be a number between 1 and 10.", "attention")
+        return redirect(url_for("show_movies", user_id=user_id))
+
+    if not data_manager.update_movie(movie_id, rating):
+        flash("Something went wrong with the database. Please try again", "error")
+        return redirect(url_for("show_movies", user_id=user_id))
+    flash("Movie successfully updated", "success")
     return redirect(url_for("show_movies", user_id=user_id))
 
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/delete", methods=["POST"])
 def delete(user_id, movie_id):
-    data_manager.delete_movie(movie_id)
-    flash("Movie successfully deleted")
+    if not data_manager.delete_movie(movie_id):
+        flash("Something went wrong with the database. Movie was not deleted.", "error")
+        return redirect(url_for("show_movies", user_id=user_id))
+    flash("Movie successfully deleted", "success")
     return redirect(url_for("show_movies", user_id=user_id))
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template("500.html"), 500
 
 
 if __name__ == "__main__":

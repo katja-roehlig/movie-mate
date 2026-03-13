@@ -1,8 +1,9 @@
 {% extends "base.html" %} {% block content %} {% if movies %} {% with messages =
-get_flashed_messages() %} {% if messages %} {% for message in messages %}
+get_flashed_messages(with_categories=true) %} {% if messages %} {% for message
+in messages %}
 
 <dialog open class="popup">
-  <p>{{ message }}</p>
+  <p class="modal {{category}}">{{ message }}</p>
   <button type="button" onclick="this.parentElement.removeAttribute('open')">
     OK
   </button>
@@ -24,7 +25,13 @@ get_flashed_messages() %} {% if messages %} {% for message in messages %}
   >
     <div class="input-wrapper">
       <label for="rating">Rating (0 - 10): </label>
-      <input type="text" id="rating" name="rating" value="{{movie.rating}}" />
+      <input
+        type="number"
+        step="0.1"
+        id="rating"
+        name="rating"
+        value="{{movie.rating}}"
+      />
     </div>
     <button type="submit" class="btn">Update</button>
     <button type="button" onclick="this.closest('dialog').close()">
@@ -32,13 +39,21 @@ get_flashed_messages() %} {% if messages %} {% for message in messages %}
     </button>
   </form>
 </dialog>
-
-<form
-  action="{{url_for('delete', user_id = current_user, movie_id = movie.id)}}"
-  method="POST"
->
-  <button type="submit" class="btn">Delete Movie</button>
-</form>
+<button type="button" class="btn" onclick="this.nextElementSibling.showModal()">
+  Delete Movie
+</button>
+<dialog>
+  <form
+    action="{{url_for('delete', user_id = current_user, movie_id = movie.id)}}"
+    method="POST"
+  >
+    <p>Do you really want do delete this movie?</p>
+    <button type="submit" class="btn">Delete</button>
+    <button type="button" onclick="this.closest('dialog').close()">
+      Cancel
+    </button>
+  </form>
+</dialog>
 {% endfor %} {% else %}
 <p>No movies found</p>
 {% endif %}
