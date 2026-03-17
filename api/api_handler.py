@@ -25,6 +25,7 @@ def get_movie_info_per_title(title):
             return (
                 data["Title"],
                 data["Year"],
+                data["Director"],
                 data.get("Poster", "N/A"),
             )
     except (requests.exceptions.ConnectionError, requests.exceptions.TimeoutError):

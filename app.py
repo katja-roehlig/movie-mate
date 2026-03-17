@@ -59,7 +59,7 @@ def add_new_movie(user_id):
 
     if new_movie is False:
         flash(
-            "Movie was not found. Please check the spelling of the title", "attention"
+            "Movie was not found.\nPlease check the spelling of the title", "attention"
         )
         return redirect(url_for("show_movies", user_id=user_id))
     if new_movie is None:
@@ -70,9 +70,15 @@ def add_new_movie(user_id):
         )
         return redirect(url_for("show_movies", user_id=user_id))
 
-    title, publication_year, image = new_movie
+    title, publication_year, director, image = new_movie
 
-    movie = Movie(user_id=user_id, title=title, year=publication_year, img=image)
+    movie = Movie(
+        user_id=user_id,
+        title=title,
+        director=director,
+        year=publication_year,
+        img=image,
+    )
     if not data_manager.add_movie(movie):
         flash("Something went wrong with the database. Please try again", "error")
         return redirect(url_for("show_movies", user_id=user_id))

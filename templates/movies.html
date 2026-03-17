@@ -1,71 +1,124 @@
 {% extends "base.html" %} {% block content %} {% if movies %} {% with messages =
-get_flashed_messages(with_categories=true) %} {% if messages %} {% for message
-in messages %}
+get_flashed_messages(with_categories=true) %} {% if messages %} {% for category,
+message in messages %}
 
-<dialog open class="popup">
-  <p class="modal {{category}}">{{ message }}</p>
-  <button type="button" onclick="this.parentElement.removeAttribute('open')">
+<dialog class="popup {{category}}" id="flash-dialog">
+  <p class="modal">{{ message }}</p>
+  <button type="button" onclick="this.closest('dialog').close()" class="btn">
     OK
   </button>
 </dialog>
-{% endfor %}{% endif %} {% endwith %} {% for movie in movies %}
-<p>{{movie.title}}</p>
-<p>{{movie.director}}</p>
-<p>{{movie.year}}</p>
-<p>{{movie.rating}}</p>
-<img src="{{movie.img}}" alt="Movie Picture" />
+<script>
+  document.getElementById("flash-dialog").showModal();
+</script>
+{% endfor %}{% endif %} {% endwith %}
 
-<button type="button" class="btn" onclick="this.nextElementSibling.showModal()">
-  Update Movie
-</button>
-<dialog>
-  <form
-    action="{{url_for('update_rating', user_id = current_user, movie_id = movie.id)}}"
-    method="POST"
-  >
-    <div class="input-wrapper">
-      <label for="rating">Rating (0 - 10): </label>
-      <input
-        type="number"
-        step="0.1"
-        id="rating"
-        name="rating"
-        value="{{movie.rating}}"
-      />
-    </div>
-    <button type="submit" class="btn">Update</button>
-    <button type="button" onclick="this.closest('dialog').close()">
-      Cancel
-    </button>
-  </form>
-</dialog>
-<button type="button" class="btn" onclick="this.nextElementSibling.showModal()">
-  Delete Movie
-</button>
-<dialog>
-  <form
-    action="{{url_for('delete', user_id = current_user, movie_id = movie.id)}}"
-    method="POST"
-  >
-    <p>Do you really want do delete this movie?</p>
-    <button type="submit" class="btn">Delete</button>
-    <button type="button" onclick="this.closest('dialog').close()">
-      Cancel
-    </button>
-  </form>
-</dialog>
-{% endfor %} {% else %}
-<p>No movies found</p>
-{% endif %}
 <form
   action="{{url_for('add_new_movie', user_id = current_user)}}"
   method="POST"
+  class="form-container form-add-movie"
 >
-  <div class="input-container">
-    <label for="title">Title:</label>
-    <input type="text" name="title" />
-  </div>
-  <button type="submit" class="btn">Add movie</button>
+  <label for="title">Title:</label>
+  <input type="text" id="title" name="title" placeholder="Enter movie title:" />
+  <button type="submit" class="btn btn-add">+</button>
 </form>
 
-{% endblock %}
+<ul class="movie-container">
+  {% for movie in movies %}
+  <li class="movie">
+    <div class="img-container">
+      <img
+        src="{{movie.img}},"
+        alt="Movie Image"
+        class="movie-poster"
+        onerror="
+          this.onerror = null;
+          this.src =
+            'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
+        "
+      />
+      <div class="rating-container">
+        <img
+          src="{{url_for('static', filename='star.svg')}}"
+          alt="Stern-Icon"
+          width="60"
+          height="60"
+          class="star"
+        />
+        <div class="movie-rating">{{movie.rating}}</div>
+      </div>
+    </div>
+    <div class="movie-content">
+      <p class="movie-info movie-title">{{movie.title}}</p>
+      <p class="movie-info movie-director">{{movie.director}}</p>
+      <p class="movie-info movie-year">{{movie.year}}</p>
+    </div>
+    <div class="button-container">
+      <button
+        type="button"
+        class="btn btn-edit"
+        onclick="this.nextElementSibling.showModal()"
+      >
+        {% include 'icons/edit.svg' %}
+      </button>
+      <dialog class="popup">
+        <form
+          action="{{url_for('update_rating', user_id = current_user, movie_id = movie.id)}}"
+          method="POST"
+        >
+          <div class="input-wrapper">
+            <label for="rating">Rating (0 - 10): </label>
+            <input
+              type="number"
+              step="0.1"
+              id="rating"
+              name="rating"
+              value="{{movie.rating}}"
+              class="dialog-input"
+            />
+          </div>
+          <div class="button-container">
+            <button type="submit" class="btn">Update</button>
+            <button
+              type="button"
+              onclick="this.closest('dialog').close()"
+              class="btn"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </dialog>
+
+      <button
+        type="button"
+        class="btn btn-delete"
+        onclick="this.nextElementSibling.showModal()"
+      >
+        {% include 'icons/delete.svg' %}
+      </button>
+      <dialog class="popup">
+        <form
+          action="{{url_for('delete', user_id = current_user, movie_id = movie.id)}}"
+          method="POST"
+        >
+          <p>Do you really want do delete this movie?</p>
+          <div class="button-container">
+            <button type="submit" class="btn">Delete</button>
+            <button
+              type="button"
+              onclick="this.closest('dialog').close()"
+              class="btn"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </dialog>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No movies found</p>
+{% endif %} {% endblock %}
