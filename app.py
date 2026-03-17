@@ -2,11 +2,14 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 import os
 from models import db, Movie
 from data_manager import DataManager
+from dotenv import load_dotenv
 import api.api_handler as api
 
 app = Flask(__name__)
 
-app.secret_key = "my not so secret password"
+load_dotenv()
+
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///{os.path.join(basedir, 'data/movies.sqlite')}"
