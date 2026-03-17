@@ -24,12 +24,15 @@ with app.app_context():
 
 @app.route("/", methods=["GET"])
 def index():
+    """Handles the GET request to show the landing page.
+    Shows all users on landing page"""
     users = data_manager.get_all_users()
     return render_template("index.html", users=users)
 
 
 @app.route("/users", methods=["POST"])
 def add_user():
+    """Handles the POST request to add a new user."""
     new_user = request.form.get("user_name")
     if new_user:
         if not data_manager.create_user(new_user):
@@ -41,12 +44,17 @@ def add_user():
 
 @app.route("/users/<int:user_id>/movies", methods=["GET"])
 def show_movies(user_id):
+    """Handles the GET request to show a list of movies filtered by the user"""
     favorite_movies = data_manager.get_movies(user_id)
     return render_template("movies.html", movies=favorite_movies, current_user=user_id)
 
 
 @app.route("/users/<int:user_id>/movies", methods=["POST"])
 def add_new_movie(user_id):
+    """
+    Handles the POST request to add a new movie.
+    Fetches details from OMDb API and saves them to the database.
+    """
     movie_title = request.form.get("title", "").strip()
     if not movie_title:
         flash("You must enter a movie title!", "attention")
@@ -91,6 +99,7 @@ def add_new_movie(user_id):
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/update", methods=["POST"])
 def update_rating(user_id, movie_id):
+    """Handles the POST request to update the rating of a movie."""
     rating = request.form.get("rating")
 
     if not rating:
@@ -114,6 +123,7 @@ def update_rating(user_id, movie_id):
 
 @app.route("/users/<int:user_id>/movies/<int:movie_id>/delete", methods=["POST"])
 def delete(user_id, movie_id):
+    """Handles the POST request to delete a movie."""
     if not data_manager.delete_movie(movie_id):
         flash("Something went wrong with the database. Movie was not deleted.", "error")
         return redirect(url_for("show_movies", user_id=user_id))
@@ -123,11 +133,13 @@ def delete(user_id, movie_id):
 
 @app.errorhandler(404)
 def page_not_found(e):
+    """Handles the 404 error, if page is not found"""
     return render_template("404.html"), 404
 
 
 @app.errorhandler(500)
 def internal_server_error(e):
+    """Handles the 500 error"""
     return render_template("500.html"), 500
 
 
