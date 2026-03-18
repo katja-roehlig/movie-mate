@@ -20,6 +20,13 @@ class DataManager:
         user_list = db.session.query(User).all()
         return user_list
 
+    def get_user_by_name(self, user_name):
+        """Checks if the user name already exists"""
+        is_existing = User.query.filter(User.name == user_name).first()
+        if is_existing:
+            return True
+        return False
+
     def get_movies(self, user_id):
         """Gets all movies filtered by user from database
         prams: user_id"""

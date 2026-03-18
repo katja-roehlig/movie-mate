@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block content %} {% if movies %} {% with messages =
+{% extends "base.html" %} {% block content %} {% with messages =
 get_flashed_messages(with_categories=true) %} {% if messages %} {% for category,
 message in messages %}
 
@@ -22,7 +22,7 @@ message in messages %}
   <input type="text" id="title" name="title" placeholder="Enter movie title:" />
   <button type="submit" class="btn btn-add">+</button>
 </form>
-
+{% if movies %}
 <ul class="movie-container">
   {% for movie in movies %}
   <li class="movie">
@@ -97,7 +97,7 @@ message in messages %}
       >
         {% include 'icons/delete.svg' %}
       </button>
-      <dialog class="popup">
+      <dialog class="popup attention">
         <form
           action="{{url_for('delete', user_id = current_user, movie_id = movie.id)}}"
           method="POST"

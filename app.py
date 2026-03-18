@@ -33,8 +33,15 @@ def index():
 @app.route("/users", methods=["POST"])
 def add_user():
     """Handles the POST request to add a new user."""
-    new_user = request.form.get("user_name")
+    new_user = request.form.get("user_name", "").strip()
+    if not new_user:
+        flash("Username cannot be empty.", "attention")
+        return redirect(url_for("index"))
     if new_user:
+        user_existing = data_manager.get_user_by_name(new_user)
+        if user_existing:
+            flash(f"Username '{new_user}' already exists.", "attention")
+            return redirect(url_for("index"))
         if not data_manager.create_user(new_user):
             flash("Something went wrong. \nPlease try again", "error")
             return redirect(url_for("index"))
